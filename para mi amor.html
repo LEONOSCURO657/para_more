@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Universo mágico para Scar­leth</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000; /* fondo negro profundo */
+      font-family: 'Comic Sans MS', cursive;
+      color: #ffd700;
+      text-align: center;
+    }
+    h1 {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      font-size: 5vw;
+      color: #a678d5;
+      text-shadow: 0 0 20px gold;
+      z-index: 10;
+    }
+    .poema {
+      position: absolute;
+      bottom: 100px;
+      width: 90%;
+      left: 5%;
+      font-size: 3.5vw;
+      color: #ffd700;
+      text-shadow: 0 0 15px #a678d5;
+      line-height: 1.5;
+      z-index: 10;
+    }
+    .final {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 5vw;
+      color: gold;
+      text-shadow: 0 0 30px #a678d5, 0 0 60px gold;
+      display: none;
+      z-index: 10;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 7vw; }
+      .poema { font-size: 5vw; }
+      .final { font-size: 7vw; }
+    }
+    canvas { display: block; position: absolute; top: 0; left: 0; }
+  </style>
+</head>
+<body>
+  <h1>✨ Universo mágico para Scar­leth ✨</h1>
+  <div class="poema"></div>
+  <div class="final">🌸 Scar­leth, eres mi universo eterno 🌸</div>
+  <canvas id="fondo"></canvas>
+  <canvas id="galaxias"></canvas>
+
+ <script>
+  // --- Fondo del espacio con miles de estrellas de colores ---
+  const fondo = document.getElementById("fondo");
+  const ctxFondo = fondo.getContext("2d");
+  fondo.width = window.innerWidth;
+  fondo.height = window.innerHeight;
+
+  let coloresEstrellas = [
+    "255,255,255", // blanco
+    "173,216,230", // azul claro
+    "255,215,0",   // dorado
+    "255,99,71"    // rojizo
+  ];
+
+  let estrellas = [];
+  for (let i = 0; i < 1200; i++) {
+    let color = coloresEstrellas[Math.floor(Math.random() * coloresEstrellas.length)];
+    estrellas.push({
+      x: Math.random() * fondo.width,
+      y: Math.random() * fondo.height,
+      size: Math.random() * 1.5 + 0.5,
+      alpha: Math.random(),
+      dx: (Math.random() - 0.5) * 0.05,
+      dy: (Math.random() - 0.5) * 0.05,
+      color: color
+    });
+  }
+
+  // --- Estrellas fugaces ---
+  let fugaces = [];
+  function crearEstrellaFugaz() {
+    fugaces.push({
+      x: Math.random() * fondo.width,
+      y: Math.random() * fondo.height / 2,
+      dx: -4 - Math.random() * 2,
+      dy: 2 + Math.random() * 2,
+      size: 2,
+      alpha: 1
+    });
+  }
+
+  function dibujarFugaces() {
+    fugaces.forEach((f, i) => {
+      ctxFondo.beginPath();
+      ctxFondo.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+      ctxFondo.fillStyle = `rgba(255,255,255,${f.alpha})`;
+      ctxFondo.fill();
+
+      // Estela
+      ctxFondo.beginPath();
+      ctxFondo.moveTo(f.x, f.y);
+      ctxFondo.lineTo(f.x - f.dx * 5, f.y - f.dy * 5);
+      ctxFondo.strokeStyle = `rgba(255,255,255,${f.alpha})`;
+      ctxFondo.stroke();
+
+      f.x += f.dx;
+      f.y += f.dy;
+      f.alpha -= 0.02;
+
+      if (f.alpha <= 0) fugaces.splice(i, 1);
+    });
+
+    if (Math.random() < 0.02) crearEstrellaFugaz();
+  }
+
+  // --- Supernova ---
+  let supernova = [];
+  function iniciarSupernova(x, y) {
+    supernova = [];
+    for (let i = 0; i < 200; i++) {
+      supernova.push({
+        x: x,
+        y: y,
+        dx: (Math.random() - 0.5) * 6,
+        dy: (Math.random() - 0.5) * 6,
+        size: Math.random() * 3 + 1,
+        alpha: 1
+      });
+    }
+  }
+
+  function dibujarSupernova() {
+    supernova.forEach((p, i) => {
+      ctxFondo.beginPath();
+      ctxFondo.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctxFondo.fillStyle = `rgba(255,215,0,${p.alpha})`;
+      ctxFondo.fill();
+
+      p.x += p.dx;
+      p.y += p.dy;
+      p.alpha -= 0.01;
+
+      if (p.alpha <= 0) supernova.splice(i, 1);
+    });
+  }
+
+  function animarFondo() {
+    ctxFondo.clearRect(0, 0, fondo.width, fondo.height);
+
+    // Dibujar estrellas
+    estrellas.forEach(e => {
+      ctxFondo.beginPath();
+      ctxFondo.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+      ctxFondo.fillStyle = `rgba(${e.color},${e.alpha})`;
+      ctxFondo.fill();
+
+      e.x += e.dx;
+      e.y += e.dy;
+
+      e.alpha += (Math.random() - 0.5) * 0.02;
+      if (e.alpha < 0) e.alpha = 0;
+      if (e.alpha > 1) e.alpha = 1;
+
+      if (e.x < 0 || e.x > fondo.width) e.x = Math.random() * fondo.width;
+      if (e.y < 0 || e.y > fondo.height) e.y = Math.random() * fondo.height;
+    });
+
+    // Dibujar fugaces
+    dibujarFugaces();
+
+    // Dibujar supernova si está activa
+    dibujarSupernova();
+
+    requestAnimationFrame(animarFondo);
+  }
+  animarFondo();
+
+  // --- Galaxias ---
+  const canvas = document.getElementById("galaxias");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let versos = [
+    "Tus ojos son estrellas que guían,",
+    "tu voz, un canto en la galaxia,",
+    "cada instante contigo es infinito,",
+    "cada recuerdo, un universo,",
+    "y en la eternidad, nuestro amor brilla."
+  ];
+
+  let rutas = ["1111.jpg","2222.jpg","3333.jpg","4444.jpg","5555.jpg"];
+  let imagenes = rutas.map(src => { let img = new Image(); img.src = src; return img; });
+
+  class Galaxia {
+    constructor(x, y, verso, img) {
+      this.x = x;
+      this.y = y;
+      this.verso = verso;
+      this.img = img;
+      this.descubierto = false;
+      this.angle = 0;
+      this.stars = [];
+      for (let i = 0; i < 30; i++) {
+        this.stars.push({
+          angle: Math.random() * Math.PI * 2,
+          radius: 100 + Math.random() * 50,
+          size: Math.random() * 2 + 1,
+          alpha: Math.random()
+        });
+      }
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+      ctx.beginPath();
+      ctx.arc(0, 0, 80, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(this.img, -80, -80, 160, 160);
+      ctx.restore();
+      this.angle += 0.001;
+      if (this.descubierto) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 90, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,215,0,0.6)";
+        ctx.stroke();
+      }
+      this.stars.forEach(s => {
+        let px = this.x + Math.cos(s.angle) * s.radius;
+        let py = this.y + Math.sin(s.angle) * s.radius;
+        ctx.beginPath();
+        ctx.arc(px, py, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+        ctx.fill();
+        s.alpha += (Math.random() - 0.5) * 0.05;
+        if (s.alpha < 0) s.alpha = 0;
+        if (s.alpha > 1) s.alpha = 1;
+      });
+    }
+  }
+
+  let galaxias = versos.map((v, i) => new Galaxia(
+    Math.random() * canvas.width,
+    150 + Math.random() * (canvas.height - 200),
+    v,
+    imagenes[i]
+  ));
+
+  function animar() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    galaxias.forEach(g => g.draw());
+    requestAnimationFrame(animar);
+  }
+  animar();
+
+  canvas.addEventListener("click", e => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    galaxias.forEach(g => {
+      let dx = mouseX - g.x;
+      let dy = mouseY - g.y;
+      if (Math.sqrt(dx*dx + dy*dy) < 90) {
+        if (!g.descubierto) {
+          g.descubierto = true;
+          mostrarVerso(g.verso);
+          verificarCompleto();
+        }
+      }
+    });
+  });
+
+  function mostrarVerso(verso) {
+    const poemaDiv = document.querySelector(".poema");
+    poemaDiv.innerHTML += verso + "<br>";
+  }
+
+  function verificarCompleto() {
+    if (galaxias.every(g => g.descubierto)) {
+      const poemaDiv = document.querySelector(".poema");
+      poemaDiv.innerHTML += "<br><strong>🌌 Poema completo revelado 🌌</strong>";
+      setTimeout(() => {
+        document.querySelector(".final").style.display = "block";
+        // Activa supernova al final
+        iniciarSupernova(fondo.width/2, fondo.height/2);
+      }, 20000); // aparece después de 20 segundos
+    }
+  }
+</script>
+
+</body>
+</html>
